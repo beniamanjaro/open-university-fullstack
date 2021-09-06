@@ -14,9 +14,8 @@ const Header = ({course}) => {
       <div>
         <b>
         Total exercises &nbsp;
-        {course.parts.reduce((a,b) => {
-          return a + b.exercises
-        }, initialValue)}
+        {course.parts.reduce((a,b) => a + b.exercises
+        , initialValue)}
         </b>
       </div>
     )
