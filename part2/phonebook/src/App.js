@@ -1,12 +1,51 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import personService from './services/persons'
 
-const Persons = ({persons}) => {
+const Person = ({name, number, handleClick}) => {
   return (
     <div>
-      {persons.map(person => <div key={person.name} > {person.name} {person.number} </div>)}
+    {name} {number} 
+    <button onClick={handleClick} > delete</button>
     </div>
   )
 }
+
+const ErrorNotification = ({message}) => {
+  const notificationStyle = {
+    color: "red",
+    fontStyle: "italic",
+    fontSize: 20
+  }
+
+  if(message === null){
+    return null
+  }
+
+  return(
+    <div style={notificationStyle} >
+      {message}
+    </div>
+  )
+}
+
+const Notification = ({message}) => {
+  const notificationStyle = {
+    color: "green",
+    fontStyle: "italic",
+    fontSize: 20
+  }
+
+  if(message === null){
+    return null
+  }
+
+  return(
+    <div style={notificationStyle} >
+      {message}
+    </div>
+  )
+}
+
 
 const PersonForm = (props) => {
   return (
@@ -29,17 +68,20 @@ const Filter = ({newSearch, handleFilterChange}) => {
 }
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456' },
-    { name: 'Ada Lovelace', number: '39-44-5323523' },
-    { name: 'Dan Abramov', number: '12-43-234345' },
-    { name: 'Mary Poppendieck', number: '39-23-6423122' }
-  ])
+  const [persons, setPersons] = useState([])
   const [ newName, setNewName ] = useState('')
   const [ newNumber, setNewNumber ] = useState('')
-  const [ newSearch, setNewSearch ] = useState("")
+  const [ newSearch, setNewSearch ] = useState('')
   const [ showAll, setShowAll ] = useState(true)
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [notificationMessage, setNotificationMessage] = useState(null)
 
+  
+  useEffect(()=> {
+    personService
+      .getAll()
+      .then(initialPerson => setPersons(initialPerson) )
+  }, [])
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -47,13 +89,44 @@ const App = () => {
       name: newName,
       number: newNumber
     }
+    const person = persons.find(n => n.name === newName)
+    const changedPerson = {...person, number: newNumber}
+    
     if(persons.some(person => person.name === newName) === true){
-      alert(`${newName} is already in the phonebook`)
+      if(window.confirm(`${newName} is already in the phonebook, replace the old number with a new one?`)){
+        personService
+          .update(person.id, changedPerson)
+          .then(returnedPerson => setPersons(persons.map(p => p.id !== person.id ? person : returnedPerson)))
+        setNotificationMessage(`Updated ${newName} phone number`)
+        setTimeout(() => {
+          setNotificationMessage(null)
+        }, 3000)
+      }
     } else {
-      setPersons(persons.concat(newObject))
-    } 
+      personService
+      .create(newObject)
+      .then(initialPerson => setPersons(persons.concat(initialPerson)))
+      setNotificationMessage(`Added ${newName} to the phonebook`)
+      setTimeout(() => {
+        setNotificationMessage(null)
+      }, 3000)
+    }
     setNewName('')
     setNewNumber('')
+  }
+
+  const handleDeletePerson = (id, name) => {
+    if(window.confirm(`Do you want to remove ${name}?`)) {
+    personService
+      .remove(id)
+      .catch(error => {
+        setErrorMessage(`${name} was already removed from the phonebook`)
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 3000)
+      })
+    setPersons(persons.filter(person => person.id !== id))
+  }
   }
 
   const handleNameChange = (event) => {
@@ -82,6 +155,8 @@ const App = () => {
         newSearch={newSearch}
         handleFilterChange={handleFilterChange}
       />
+      <ErrorNotification message={errorMessage} />
+      <Notification message={notificationMessage} />
       <h2>add a new</h2>
       <PersonForm
         addPerson={addPerson}
@@ -91,7 +166,7 @@ const App = () => {
         handleNumberChange={handleNumberChange}
       />
       <h2>Numbers</h2>
-      <Persons persons={personsToShow} />
+      {personsToShow.map(person => <Person key={person.id} name={person.name} number={person.number} handleClick={() => handleDeletePerson(person.id, person.name)} />)}
     </div>
   )
 }
