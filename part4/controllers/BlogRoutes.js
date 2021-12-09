@@ -1,5 +1,7 @@
 const blogRoutes = require("express").Router();
 const Blog = require("../models/blog.js");
+const middleware = require("../utils/middleware");
+const userExtractor = middleware.userExtractor;
 require("dotenv").config();
 
 blogRoutes.get("/", async (request, response) => {
@@ -12,7 +14,7 @@ blogRoutes.get("/:id", async (request, response) => {
   response.json(blog);
 });
 
-blogRoutes.post("/", async (request, response, next) => {
+blogRoutes.post("/", userExtractor, async (request, response, next) => {
   const { body } = request;
   const user = request.user;
   if (!request.token || !user._id) {

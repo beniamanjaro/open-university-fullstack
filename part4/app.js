@@ -9,7 +9,6 @@ const middleware = require("./utils/middleware");
 const mongoose = require("mongoose");
 const config = require("./utils/config");
 const logger = require("./utils/logger");
-const userExtractor = middleware.userExtractor;
 
 mongoose
   .connect(config.MONGO_URI)
@@ -20,7 +19,7 @@ app.use(cors());
 app.use(express.json());
 app.use(middleware.requestLogger);
 app.use(middleware.getTokenFrom);
-app.use("/api/blogs", userExtractor, blogRoutes);
+app.use("/api/blogs", blogRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/login", loginRouter);
 
