@@ -4,17 +4,13 @@ import blogService from "./services/blogs";
 import LoginForm from "./components/LoginFrom";
 import BlogForm from "./components/BlogForm";
 import loginService from "./services/login";
+import Togglable from "./components/Toggleable";
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
-  const [author, setAuthor] = useState("");
-  const [title, setTitle] = useState("");
-  const [url, setUrl] = useState("");
   const [user, setUser] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [notificationMessage, setNotificationMessage] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
 
   useEffect(() => {
     blogService.getAll().then((blogs) => setBlogs(blogs));
@@ -26,19 +22,15 @@ const App = () => {
       const user = JSON.parse(loggedUserJSON);
       setUser(user);
       blogService.setToken(user.token);
-      console.log(user.token);
     }
   }, []);
 
-  const handleLogin = async (event) => {
-    event.preventDefault();
+  const handleLogin = async (loginInfo) => {
     try {
-      const user = await loginService.login({ username, password });
+      const user = await loginService.login(loginInfo);
       blogService.setToken(user.token);
       window.localStorage.setItem("loggedBlogappUser", JSON.stringify(user));
       setUser(user);
-      setUsername("");
-      setPassword("");
     } catch (exception) {
       setErrorMessage("Wrong Credentials");
       setTimeout(() => {
@@ -47,17 +39,23 @@ const App = () => {
     }
   };
 
-  const handleCreateBlog = async (event) => {
-    event.preventDefault();
+  const handleUpdateLike = async (newBlog) => {
+    const updatedBlog = await blogService.update(newBlog.id, newBlog);
+  };
+
+  const handleDeleteBlog = async (blog) => {
+    await blogService.deleteBlog(blog.id);
+    setBlogs(blogs.filter((b) => b.title !== blog.title));
+  };
+
+  const handleCreateBlog = async (newObject) => {
     try {
-      const newBlog = await blogService.create({ title, author, url });
+      const newBlog = await blogService.create(newObject);
       setBlogs(blogs.concat(newBlog));
-      setTitle("");
-      setAuthor("");
-      setUrl("");
       setNotificationMessage(
-        `a new blog '${title}' by ${author} has been added!`
+        `a new blog '${newObject.title}' by ${newObject.author} has been added!`
       );
+      console.log(blogs);
       setTimeout(() => {
         setNotificationMessage("");
       }, 3000);
@@ -68,24 +66,6 @@ const App = () => {
       }, 5000);
     }
   };
-
-  const handlePasswordChange = (event) => {
-    setPassword(event.target.value);
-  };
-  const handleUsernameChange = (event) => {
-    setUsername(event.target.value);
-  };
-
-  const handleTitleChange = (event) => {
-    setTitle(event.target.value);
-  };
-  const handleUrlChange = (event) => {
-    setUrl(event.target.value);
-  };
-  const handleAuthorChange = (event) => {
-    setAuthor(event.target.value);
-  };
-
   const handleLogout = () => {
     console.log("logout");
     window.localStorage.clear();
@@ -97,32 +77,32 @@ const App = () => {
       <h2>{errorMessage}</h2>
       <h2>{notificationMessage}</h2>
       {user === null ? (
-        LoginForm({
-          username: username,
-          password: password,
-          handlelogin: handleLogin,
-          handleUsernameChange: handleUsernameChange,
-          handlePasswordChange: handlePasswordChange,
-        })
+        <Togglable buttonLabel="login">
+          <LoginForm handlelogin={handleLogin} />
+        </Togglable>
       ) : (
         <div>
-          <p>{user.name} logged-in</p>
+          <div style={{ display: "inline-block" }}>
+            <p>{user.name} logged-in</p>
+          </div>
           <button onClick={handleLogout}>logout</button>
+          <Togglable buttonLabel="create blog">
+            <BlogForm handleCreateBlog={handleCreateBlog} />
+          </Togglable>
         </div>
       )}
-      <BlogForm
-        author={author}
-        title={title}
-        url={url}
-        handleTitleChange={handleTitleChange}
-        handleAuthorChange={handleAuthorChange}
-        handleUrlChange={handleUrlChange}
-        handleCreateBlog={handleCreateBlog}
-      />
       <h2>blogs</h2>
-      {blogs.map((blog) => (
-        <Blog key={blog.id} blog={blog} />
-      ))}
+      {blogs
+        .sort((a, b) => (a.likes > b.likes ? -1 : 1))
+        .map((blog) => (
+          <Blog
+            key={blog.id}
+            blog={blog}
+            updateLike={handleUpdateLike}
+            user={user}
+            deleteBlog={handleDeleteBlog}
+          />
+        ))}
     </div>
   );
 };

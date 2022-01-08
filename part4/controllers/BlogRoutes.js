@@ -36,6 +36,7 @@ blogRoutes.post("/", userExtractor, async (request, response, next) => {
 
 blogRoutes.put("/:id", async (request, response, next) => {
   const body = request.body;
+  console.log(body);
   const blog = {
     title: body.title,
     author: body.author,
@@ -49,7 +50,7 @@ blogRoutes.put("/:id", async (request, response, next) => {
   response.json(updatedBlog);
 });
 
-blogRoutes.delete("/:id", async (request, response, next) => {
+blogRoutes.delete("/:id", userExtractor, async (request, response, next) => {
   const blogToDelete = await Blog.findById(request.params.id);
   const user = request.user;
   if (blogToDelete.user.toString() === user._id.toString()) {
