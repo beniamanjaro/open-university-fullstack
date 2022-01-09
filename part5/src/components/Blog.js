@@ -45,7 +45,7 @@ const Blog = ({ blog, updateLike, user, deleteBlog }) => {
           <button onClick={handleDeleteBlog}>delete</button>
         </div>
       ) : (
-        <div style={showWhenVisible}>
+        <div style={showWhenVisible} className="togglableContent">
           <div style={{ display: "inline-block" }}>
             {`${blog.title} by ${blog.author}`}
           </div>

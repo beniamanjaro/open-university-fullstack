@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Blog from "./components/Blog";
 import blogService from "./services/blogs";
 import LoginForm from "./components/LoginFrom";
@@ -11,6 +11,8 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [notificationMessage, setNotificationMessage] = useState("");
+
+  const blogFormRef = useRef();
 
   useEffect(() => {
     blogService.getAll().then((blogs) => setBlogs(blogs));
@@ -50,6 +52,7 @@ const App = () => {
 
   const handleCreateBlog = async (newObject) => {
     try {
+      blogFormRef.current.toggleVisibility();
       const newBlog = await blogService.create(newObject);
       setBlogs(blogs.concat(newBlog));
       setNotificationMessage(
@@ -86,7 +89,7 @@ const App = () => {
             <p>{user.name} logged-in</p>
           </div>
           <button onClick={handleLogout}>logout</button>
-          <Togglable buttonLabel="create blog">
+          <Togglable buttonLabel="create blog" ref={blogFormRef}>
             <BlogForm handleCreateBlog={handleCreateBlog} />
           </Togglable>
         </div>
