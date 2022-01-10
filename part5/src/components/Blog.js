@@ -31,7 +31,13 @@ const Blog = ({ blog, updateLike, user, deleteBlog }) => {
   };
 
   return (
-    <div style={{ border: "dotted 5px green", margin: "5px" }}>
+    <div
+      style={{
+        border: "dotted 5px white",
+        margin: "5px",
+        backgroundColor: "#99ccff",
+      }}
+    >
       {isCreatedByUser ? (
         <div style={showWhenVisible}>
           <div style={{ display: "inline-block" }}>
