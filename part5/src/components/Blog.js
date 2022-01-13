@@ -7,11 +7,16 @@ const Blog = ({ blog, updateLike, user, deleteBlog }) => {
   const showWhenVisible = { display: visible ? "" : "none" };
 
   let isCreatedByUser;
-  if (user) {
+  if (user && blog.user.id) {
     isCreatedByUser = user.id === blog.user.id;
+  } else if (user) {
+    isCreatedByUser = user.id === blog.user;
   } else {
     isCreatedByUser = false;
   }
+
+  console.log(JSON.stringify(user));
+  console.log(JSON.stringify(blog));
 
   const toggleVisibility = () => {
     setVisible(!visible);
@@ -47,7 +52,7 @@ const Blog = ({ blog, updateLike, user, deleteBlog }) => {
           <div>{blog.url}</div>
           <div style={{ display: "inline-block" }}>{likes}</div>
           <button onClick={handleLikeUpdate}>like</button>
-          <div>{blog.user.name}</div>
+          <div>{user.name}</div>
           <button onClick={handleDeleteBlog}>delete</button>
         </div>
       ) : (
@@ -66,7 +71,9 @@ const Blog = ({ blog, updateLike, user, deleteBlog }) => {
         <div style={{ display: "inline-block" }}>
           {`${blog.title} by ${blog.author}`}
         </div>
-        <button onClick={toggleVisibility}>view</button>
+        <button className="view-button" onClick={toggleVisibility}>
+          view
+        </button>
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import Notification from "./components/Notification";
 import Blog from "./components/Blog";
+import ErrorMessage from "./components/ErrorMessage";
 import blogService from "./services/blogs";
 import LoginForm from "./components/LoginFrom";
 import BlogForm from "./components/BlogForm";
@@ -11,6 +13,7 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [notificationMessage, setNotificationMessage] = useState("");
+  const byLikes = (b1, b2) => b2.likes - b1.likes;
 
   const blogFormRef = useRef();
 
@@ -77,8 +80,8 @@ const App = () => {
 
   return (
     <div>
-      <h2>{errorMessage}</h2>
-      <h2>{notificationMessage}</h2>
+      <ErrorMessage message={errorMessage} />
+      <Notification message={notificationMessage} />
       {user === null ? (
         <Togglable buttonLabel="login">
           <LoginForm handlelogin={handleLogin} />
@@ -95,17 +98,15 @@ const App = () => {
         </div>
       )}
       <h2>blogs</h2>
-      {blogs
-        .sort((a, b) => (a.likes > b.likes ? -1 : 1))
-        .map((blog) => (
-          <Blog
-            key={blog.id}
-            blog={blog}
-            updateLike={handleUpdateLike}
-            user={user}
-            deleteBlog={handleDeleteBlog}
-          />
-        ))}
+      {blogs.sort(byLikes).map((blog) => (
+        <Blog
+          key={blog.id}
+          blog={blog}
+          updateLike={handleUpdateLike}
+          user={user}
+          deleteBlog={handleDeleteBlog}
+        />
+      ))}
     </div>
   );
 };
