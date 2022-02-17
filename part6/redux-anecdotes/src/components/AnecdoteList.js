@@ -1,10 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { voteAnecdote } from "../reducers/anecdoteReducer";
-import {
-  setNotification,
-  removeNotification,
-} from "../reducers/notificationReducer";
+import { setNotification } from "../reducers/notificationReducer";
 import Notification from "./Notification";
 import Filter from "./Filter";
 
@@ -23,7 +20,7 @@ const AnecdoteList = () => {
     dispatch(setNotification(anecdote.content, 5));
   };
 
-  const byLikes = (b1, b2) => b2.likes - b1.likes;
+  const byLikes = (b1, b2) => b2.votes - b1.votes;
 
   return (
     <>
